@@ -7,6 +7,8 @@
 #define DEFAULT_ERR_MSG "\nOcorreu um problema: "
 #define CLOSE_MSG "PROGRAMA ENCERRADO\n"
 #define MAX_LINE 80
+#define seq_str "jos seq> "
+#define par_str "jos par> "
 
 /*    SHELL TYPE
     - 0: shell seq
@@ -27,7 +29,7 @@ int should_run = 1; //Flag de controle para ajudar a execução
 FILE *arq_address; //Endereço do arquivo de entrada total
 char *commands[MAX_LINE]; //Lista de comandos
 char *last_line; //Última linha lida
-
+char *str_shell_type = seq_str; //String que indica o tipo de shell
 
 // Function PROTOTYPES
 void print_err(char *err);
@@ -105,11 +107,16 @@ int shell_loop(){
         //shell interativo
         if (shell_mode == 0){
             
-            printf("jos seq> ");
+            printf("%s", str_shell_type);
             fgets(line, MAX_LINE, stdin);
             // scanf ( "%[^\n]", &line);
             // printf("%s", line);
             // scanf ( "%[^\n]", &line);
+            if(strcmp(line, "exit\n") == 0){
+                should_run = 0;
+                printf(CLOSE_MSG);
+                exit(0);
+            }
             printf("%s", line);
             fflush(stdout);
         }
