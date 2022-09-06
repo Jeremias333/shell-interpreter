@@ -1,23 +1,23 @@
 .PHONY: run clean run-dev clean-dev
 
-./build: ./src/main.c
+./shell: ./src/main.c
 	gcc $^ -o $@
 
-./build-dev: ./dev/main.c
+./shell-dev: ./dev/main.c
 	gcc $^ -o $@
 
 run: 
-	./build
+	./shell
 
 clean:
-	rm build
+	rm shell
 
 run-dev:
-	./dev/build
+	./dev/shell
 
 clean-dev:
-	rm ./dev/build
+	rm shell-dev
 
-dev: ./build-dev
+dev: ./shell-dev
 
-build: ./build
+build: ./shell
