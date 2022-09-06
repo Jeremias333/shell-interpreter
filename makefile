@@ -13,7 +13,7 @@ clean:
 	rm shell
 
 run-dev:
-	./dev/shell
+	./shell-dev
 
 clean-dev:
 	rm shell-dev
