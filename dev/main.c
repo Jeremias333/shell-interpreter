@@ -39,6 +39,7 @@ int process_address(char *file_name);
 int shell_loop();
 int process_commands(char *command);
 void split_commands(char *line);
+void exists_exit_command(char *command);
 
 int main(int argc, char **argv) {
     printf("Dev area operating...\n");
@@ -131,6 +132,7 @@ int shell_loop(){
 int process_commands(char *line){
     split_commands(line);
     for (int i = 0; i < commands_size; i++){
+        exists_exit_command(commands[i]);
         system(commands[i]);
     }
 }
@@ -145,4 +147,28 @@ void split_commands(char *line){
         count++;
     }
     commands_size = count;
+}
+
+void exists_exit_command(char *command){
+     if(strcmp(command, "exit\n") == 0){
+        should_run = 0;
+        printf(CLOSE_MSG);
+        exit(0);
+    }else if(strcmp(command, " exit\n") == 0){
+        should_run = 0;
+        printf(CLOSE_MSG);
+        exit(0);
+    }else if(strcmp(command, "exit") == 0){
+        should_run = 0;
+        printf(CLOSE_MSG);
+        exit(0);
+    }else if(strcmp(command, " exit") == 0){
+        should_run = 0;
+        printf(CLOSE_MSG);
+        exit(0);
+    }else if(strcmp(command, "exit \n") == 0){
+        should_run = 0;
+        printf(CLOSE_MSG);
+        exit(0);
+    }
 }
