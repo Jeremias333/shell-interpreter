@@ -109,19 +109,13 @@ int shell_loop(){
         if (shell_mode == 0){
             printf("%s", str_shell_type);
             fgets(line, MAX_LINE, stdin);
-            // scanf ( "%[^\n]", &line);
-            // printf("%s", line);
-            // scanf ( "%[^\n]", &line);
+
             if(strcmp(line, "exit\n") == 0){
                 should_run = 0;
                 printf(CLOSE_MSG);
                 exit(0);
             }
-            // printf("%s", line);
-            // split_commands(line);
-            // for (int i = 0; i < commands_size; i++){
-            //     printf("%s", commands[i]);
-            // }
+
             process_commands(line);
             fflush(stdout);
         }
