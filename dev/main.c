@@ -28,6 +28,7 @@ char *arguments[MAX_LINE/2 + 1]; //A linha de comandos podem ter no máximo 40 a
 int should_run = 1; //Flag de controle para ajudar a execução 
 FILE *arq_address; //Endereço do arquivo de entrada total
 char *commands[MAX_LINE]; //Lista de comandos
+int commands_size = 0; //Tamanho da lista de comandos
 char *last_line; //Última linha lida
 char *str_shell_type = seq_str; //String que indica o tipo de shell
 
@@ -37,7 +38,7 @@ int exists_file_path(char *path);
 int process_address(char *file_name);
 int shell_loop();
 int process_commands(char *command);
-
+void split_commands(char *line);
 
 int main(int argc, char **argv) {
     printf("Dev area operating...\n");
@@ -106,7 +107,6 @@ int shell_loop(){
     while(should_run){
         //shell interativo
         if (shell_mode == 0){
-            
             printf("%s", str_shell_type);
             fgets(line, MAX_LINE, stdin);
             // scanf ( "%[^\n]", &line);
@@ -117,7 +117,12 @@ int shell_loop(){
                 printf(CLOSE_MSG);
                 exit(0);
             }
-            printf("%s", line);
+            // printf("%s", line);
+            // split_commands(line);
+            // for (int i = 0; i < commands_size; i++){
+            //     printf("%s", commands[i]);
+            // }
+            process_commands(line);
             fflush(stdout);
         }
 
@@ -129,6 +134,21 @@ int shell_loop(){
     }
 }
 
-int process_commands(char *command){
+int process_commands(char *line){
+    split_commands(line);
+    for (int i = 0; i < commands_size; i++){
+        system(commands[i]);
+    }
+}
 
+void split_commands(char *line){
+    //pegando o primeiro comando
+    char *token = strtok(line, ";");
+    int count = 0;
+    while(token != NULL){
+        commands[count] = token;
+        token = strtok(NULL, ";");
+        count++;
+    }
+    commands_size = count;
 }
