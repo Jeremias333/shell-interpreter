@@ -40,6 +40,7 @@ int shell_loop();
 int process_commands(char *command);
 void split_commands(char *line);
 void exists_exit_command(char *command);
+void exists_exit_in_file(char *commands);
 
 int main(int argc, char **argv) {
     printf("Dev area operating...\n");
@@ -138,29 +139,12 @@ int shell_loop(){
         if (shell_mode == 1){
             //executar comandos lidos
 
-            //verificando existencia do comando exit
-            int initialize_exit = strstr(commands[commands_size-1], "exit") - commands[commands_size-1];
-            
-            if (initialize_exit == 0){
-                should_run = 0;
-                printf(CLOSE_MSG);
-                exit(0);
-            }
-
-            // exit(0);
-            printf("\nvalor: %ld", );
-            exit(0);
-            if (strcmp(commands[commands_size-1], "exit") == 1){
-                printf("Não existe exit no arquivo de entrada\n");
-                // commands[commands_size] = "exit\n";
-                exit(0);
-            }
             for(int i = 0; i < commands_size; i++){
                 process_commands(commands[i]);
             }
-            // should_run = 0;
-            // printf(CLOSE_MSG);
-            // exit(0);
+
+            //verificando existencia do comando exit
+            exists_exit_in_file(commands[commands_size-1]);
         }
     }
 }
@@ -203,6 +187,18 @@ void exists_exit_command(char *command){
         printf(CLOSE_MSG);
         exit(0);
     }else if(strcmp(command, "exit \n") == 0){
+        should_run = 0;
+        printf(CLOSE_MSG);
+        exit(0);
+    }
+}
+
+int exists_exit_in_file(char *commands){
+    long initialize_exit = strstr(commands, "exit") - commands;
+    printf("valor: %ld\n", initialize_exit);
+
+    if (initialize_exit < 0){
+        printf("Não existe exit no arquivo de entrada\n");
         should_run = 0;
         printf(CLOSE_MSG);
         exit(0);
