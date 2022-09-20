@@ -47,22 +47,31 @@ int main(int argc, char **argv) {
 
     //Verifica existencia de parametro passando path do arquivo
     if (exists_file_path(address_path) == 1){
-        //Verifica existencia do arquivo
-        //Verifica existencia de conteúdo no arquivo
-        //Verifica extensão do arquivo
+        // Verifica existencia do arquivo
+        // Verifica existencia de conteúdo no arquivo
+        // Verifica extensão do arquivo
         int proceed = process_address(address_path);
         if (proceed == 0){
             shell_mode = 1;
-            printf("Processando arquivo...\n");
+            // printf("Processando arquivo...\n");
 
             //inicializar o shell por leitura do arquivo
+            char line[MAX_LINE];
+            int count = 0;
+            while(fgets(line, MAX_LINE, arq_address) != NULL){
+                commands[count] = line;
+                count++;
+            }
+            commands_size = count;
+            
         }else{
             //irá encerrar a aplicação com mensagem de erro
             exit(1);
         }
     }
 
-    //inicializar shell por linha de comando
+    //inicializar shell por linha de comando caso o shell_mode seja 0
+    //inicializar shell por arquivo (batch) caso o shell_mode seja 1
     shell_loop();
     return 0;
 }
@@ -91,7 +100,7 @@ int process_address(char *file_name){
     }
 
     arq_address = fopen(file_name, "r");
-    char line[7];
+    // char line[7];
 
     if (arq_address == NULL){
         char *ERR = DEFAULT_ERR_MSG"Ao abrir o arquivo. Está vazio ou não existe";
@@ -111,7 +120,11 @@ int shell_loop(){
             printf("%s", str_shell_type);
             fgets(line, MAX_LINE, stdin);
 
-            if(strcmp(line, "exit\n") == 0){
+            if (feof(stdin)){
+                should_run = 0;
+                printf(CLOSE_MSG);
+                exit(0);
+            }else if(strcmp(line, "exit\n") == 0){
                 should_run = 0;
                 printf(CLOSE_MSG);
                 exit(0);
@@ -124,7 +137,30 @@ int shell_loop(){
         //shell batch
         if (shell_mode == 1){
             //executar comandos lidos
-            printf("Deve executar comandos lidos do arquivo\n");
+
+            //verificando existencia do comando exit
+            int initialize_exit = strstr(commands[commands_size-1], "exit") - commands[commands_size-1];
+            
+            if (initialize_exit == 0){
+                should_run = 0;
+                printf(CLOSE_MSG);
+                exit(0);
+            }
+
+            // exit(0);
+            printf("\nvalor: %ld", );
+            exit(0);
+            if (strcmp(commands[commands_size-1], "exit") == 1){
+                printf("Não existe exit no arquivo de entrada\n");
+                // commands[commands_size] = "exit\n";
+                exit(0);
+            }
+            for(int i = 0; i < commands_size; i++){
+                process_commands(commands[i]);
+            }
+            // should_run = 0;
+            // printf(CLOSE_MSG);
+            // exit(0);
         }
     }
 }
@@ -150,7 +186,7 @@ void split_commands(char *line){
 }
 
 void exists_exit_command(char *command){
-     if(strcmp(command, "exit\n") == 0){
+    if(strcmp(command, "exit\n") == 0){
         should_run = 0;
         printf(CLOSE_MSG);
         exit(0);
