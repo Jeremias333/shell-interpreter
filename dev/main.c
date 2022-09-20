@@ -193,7 +193,7 @@ void exists_exit_command(char *command){
     }
 }
 
-int exists_exit_in_file(char *commands){
+void exists_exit_in_file(char *commands){
     long initialize_exit = strstr(commands, "exit") - commands;
     printf("valor: %ld\n", initialize_exit);
 
