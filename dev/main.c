@@ -122,6 +122,7 @@ int shell_loop(){
             fgets(line, MAX_LINE, stdin);
 
             if (feof(stdin)){
+                //resolve problema de Control+D loop infinito
                 should_run = 0;
                 printf(CLOSE_MSG);
                 exit(0);
