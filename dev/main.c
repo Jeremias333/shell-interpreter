@@ -28,6 +28,8 @@ char *arguments[MAX_LINE/2 + 1]; //A linha de comandos podem ter no máximo 40 a
 int should_run = 1; //Flag de controle para ajudar a execução 
 FILE *arq_address; //Endereço do arquivo de entrada total
 char *commands[MAX_LINE]; //Lista de comandos
+char *lines_commands[MAX_LINE]; //Lista de linhas de comandos
+int lines_count = 0;
 int commands_size = 0; //Tamanho da lista de comandos
 char *last_line; //Última linha lida
 char *str_shell_type = seq_str; //String que indica o tipo de shell
@@ -36,8 +38,9 @@ char *str_shell_type = seq_str; //String que indica o tipo de shell
 void print_err(char *err);
 int exists_file_path(char *path);
 int process_address(char *file_name);
-int shell_loop();
-int process_commands(char *command);
+void shell_loop();
+void process_commands(char *command);
+void process_file();
 void split_commands(char *line);
 void exists_exit_command(char *command);
 void exists_exit_in_file(char *commands);
@@ -54,17 +57,8 @@ int main(int argc, char **argv) {
         int proceed = process_address(address_path);
         if (proceed == 0){
             shell_mode = 1;
-            // printf("Processando arquivo...\n");
-
-            //inicializar o shell por leitura do arquivo
-            char line[MAX_LINE];
-            int count = 0;
-            while(fgets(line, MAX_LINE, arq_address) != NULL){
-                commands[count] = line;
-                count++;
-            }
-            commands_size = count;
-            
+            //inicializar shell por arquivo (batch) caso o shell_mode seja 1
+            shell_loop();
         }else{
             //irá encerrar a aplicação com mensagem de erro
             exit(1);
@@ -72,7 +66,6 @@ int main(int argc, char **argv) {
     }
 
     //inicializar shell por linha de comando caso o shell_mode seja 0
-    //inicializar shell por arquivo (batch) caso o shell_mode seja 1
     shell_loop();
     return 0;
 }
@@ -113,7 +106,7 @@ int process_address(char *file_name){
     return 0;
 }
 
-int shell_loop(){
+void shell_loop(){
     char line[MAX_LINE];
     while(should_run){
         //shell interativo
@@ -139,24 +132,52 @@ int shell_loop(){
         //shell batch
         if (shell_mode == 1){
             //executar comandos lidos
-
-            for(int i = 0; i < commands_size; i++){
-                process_commands(commands[i]);
-            }
-
-            //verificando existencia do comando exit
-            exists_exit_in_file(commands[commands_size-1]);
+            process_file();
+            // //verificando existencia do comando exit
+            // exists_exit_in_file(commands[commands_size-1]);
         }
     }
 }
 
-int process_commands(char *line){
+void process_commands(char *line){
+    //irá dividir os comandos colocando todos dentro do vetor global commands
     split_commands(line);
+
     for (int i = 0; i < commands_size; i++){
         exists_exit_command(commands[i]);
         system(commands[i]);
     }
 }
+
+void process_file(){
+    // printf("Processando arquivo...\n");
+
+    //inicializar o shell por leitura do arquivo
+    char line[MAX_LINE];
+    int count = 0;
+    while(fgets(line, MAX_LINE, arq_address) != NULL){
+        lines_commands[count] = line;
+        count++;
+    }
+
+    lines_count = count;
+    
+    for(int i = 0; i < lines_count; i++){
+        split_commands(lines_commands[i]);
+    }
+    //irá dividir os comandos colocando todos dentro do vetor global commands
+    // split_commands(line);
+
+    commands_size += lines_count;
+
+    for (int i = 0; i < commands_size; i++){
+        printf("valor do command: %s em %d\n", commands[i], i);
+        exists_exit_command(commands[i]);
+        system(commands[i]);
+    }
+
+}
+
 
 void split_commands(char *line){
     //pegando o primeiro comando
@@ -164,9 +185,11 @@ void split_commands(char *line){
     int count = 0;
     while(token != NULL){
         commands[count] = token;
+        // printf("Valor do command: %s\n", commands[count]);
         token = strtok(NULL, ";");
         count++;
     }
+    printf("Valor do count: %d", count);
     commands_size = count;
 }
 
