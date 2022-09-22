@@ -155,6 +155,8 @@ void process_file(){
     //inicializar o shell por leitura do arquivo
     char line[MAX_LINE];
     int count = 0;
+
+    //lendo linha a linha do arquivo
     while(fgets(line, MAX_LINE, arq_address) != NULL){
         lines_commands[count] = line;
         count++;
