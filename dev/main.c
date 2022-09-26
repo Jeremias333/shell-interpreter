@@ -41,7 +41,7 @@ int process_address(char *file_name);
 void shell_loop();
 void process_commands(char *command);
 void process_file();
-void split_commands(char *line);
+int split_commands(char *line, int count);
 void exists_exit_command(char *command);
 void exists_exit_in_file(char *commands);
 
@@ -94,7 +94,6 @@ int process_address(char *file_name){
     }
 
     arq_address = fopen(file_name, "r");
-    // char line[7];
 
     if (arq_address == NULL){
         char *ERR = DEFAULT_ERR_MSG"Ao abrir o arquivo. Está vazio ou não existe";
@@ -141,7 +140,7 @@ void shell_loop(){
 
 void process_commands(char *line){
     //irá dividir os comandos colocando todos dentro do vetor global commands
-    split_commands(line);
+    split_commands(line, 0);
 
     for (int i = 0; i < commands_size; i++){
         exists_exit_command(commands[i]);
@@ -153,46 +152,70 @@ void process_file(){
     // printf("Processando arquivo...\n");
 
     //inicializar o shell por leitura do arquivo
-    char line[MAX_LINE];
-    int count = 0;
+    char line_arq[MAX_LINE];
+    // int count = 0;
 
     //lendo linha a linha do arquivo
-    while(fgets(line, MAX_LINE, arq_address) != NULL){
-        lines_commands[count] = line;
-        count++;
+
+    //BUG: Para arquivos a linha abaixo está sobreescrevendo
+    //Cada série de comandos.
+    // while(fgets(line, MAX_LINE, arq_address) != NULL){
+    //     lines_commands[count] = line;
+    //     count++;
+    // }
+
+    int count = 0;
+
+    while (!feof(arq_address)){
+        fgets(line_arq, sizeof(line_arq), arq_address);
+        // lines_count = count;
+    
+        // for(int i = 0; i < lines_count; i++){
+        commands_size += split_commands(line_arq, count);
+        // }
+
+        printf("Linha processada %d\n", commands_size);
     }
 
-    lines_count = count;
-    
-    for(int i = 0; i < lines_count; i++){
-        split_commands(lines_commands[i]);
-    }
     //irá dividir os comandos colocando todos dentro do vetor global commands
     // split_commands(line);
 
-    commands_size += lines_count;
+    // commands_size += lines_count;
 
     for (int i = 0; i < commands_size; i++){
-        printf("valor do command: %s em %d\n", commands[i], i);
-        exists_exit_command(commands[i]);
-        system(commands[i]);
+        // if (commands[i] != NULL){
+            printf("valor do command: %s em %d\n", commands[i], i);
+        // }
+        // exists_exit_command(commands[i]);
+        // system(commands[i]);
     }
+
+    exit(0);
 
 }
 
-
-void split_commands(char *line){
+/*
+    BUG: split_commands está sobreescrevendo as posições do array de comandos com
+    a linha posterior no arquivo.
+*/
+int split_commands(char *line, int count){
     //pegando o primeiro comando
     char *token = strtok(line, ";");
-    int count = 0;
+    // int count = 0;
+    // if(count != 0){
+    //     count += 1;
+    // }
     while(token != NULL){
+        printf("Token da vez: %s para a posição: %d\n", token, count);
         commands[count] = token;
+        count++;
         // printf("Valor do command: %s\n", commands[count]);
         token = strtok(NULL, ";");
-        count++;
     }
-    printf("Valor do count: %d", count);
-    commands_size = count;
+    // printf("Valor do count: %d", count);
+    //itera o valor que foi contado a variavel de controle para tamanho de cada comando
+
+    return count++;
 }
 
 void exists_exit_command(char *command){
@@ -221,7 +244,7 @@ void exists_exit_command(char *command){
 
 void exists_exit_in_file(char *commands){
     long initialize_exit = strstr(commands, "exit") - commands;
-    printf("valor: %ld\n", initialize_exit);
+    // printf("valor: %ld\n", initialize_exit);
 
     if (initialize_exit < 0){
         printf("Não existe exit no arquivo de entrada\n");
