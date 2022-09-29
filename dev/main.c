@@ -2,8 +2,10 @@
 #include "string.h"
 #include "stdlib.h"
 #include "unistd.h"
+#include "ctype.h"
 
 //Error CONSTANTES
+#define DELIM_TRIM " \t\n"
 #define DEFAULT_ERR_MSG "\nOcorreu um problema: "
 #define CLOSE_MSG "PROGRAMA ENCERRADO\n"
 #define MAX_LINE 80
@@ -29,10 +31,13 @@ int should_run = 1; //Flag de controle para ajudar a execução
 FILE *arq_address; //Endereço do arquivo de entrada total
 char *commands[MAX_LINE]; //Lista de comandos
 char *lines_commands[MAX_LINE]; //Lista de linhas de comandos
+char *temp_commands[MAX_LINE];
 int lines_count = 0;
 int commands_size = 0; //Tamanho da lista de comandos
 char *last_line; //Última linha lida
 char *str_shell_type = seq_str; //String que indica o tipo de shell
+int split_commands_count = 0;
+int break_split_count = 0;
 
 // Function PROTOTYPES
 void print_err(char *err);
@@ -41,9 +46,10 @@ int process_address(char *file_name);
 void shell_loop();
 void process_commands(char *command);
 void process_file();
-int split_commands(char *line, int count);
+void split_commands(char *line);
 void exists_exit_command(char *command);
 void exists_exit_in_file(char *commands);
+char *trim (char *string);
 
 int main(int argc, char **argv) {
     printf("Dev area operating...\n");
@@ -140,7 +146,7 @@ void shell_loop(){
 
 void process_commands(char *line){
     //irá dividir os comandos colocando todos dentro do vetor global commands
-    split_commands(line, 0);
+    split_commands(line);
 
     for (int i = 0; i < commands_size; i++){
         exists_exit_command(commands[i]);
@@ -171,11 +177,16 @@ void process_file(){
         // lines_count = count;
     
         // for(int i = 0; i < lines_count; i++){
-        commands_size += split_commands(line_arq, count);
+        if (feof(arq_address)){
+            break;
+        }
+        split_commands(line_arq);
         // }
 
-        printf("Linha processada %d\n", commands_size);
+        // printf("Linha processada %d\n", commands_size);
     }
+
+    commands_size = split_commands_count;
 
     //irá dividir os comandos colocando todos dentro do vetor global commands
     // split_commands(line);
@@ -185,9 +196,9 @@ void process_file(){
     for (int i = 0; i < commands_size; i++){
         // if (commands[i] != NULL){
             printf("valor do command: %s em %d\n", commands[i], i);
+            // exists_exit_command(commands[i]);
+            // system(commands[i]);
         // }
-        // exists_exit_command(commands[i]);
-        // system(commands[i]);
     }
 
     exit(0);
@@ -198,24 +209,46 @@ void process_file(){
     BUG: split_commands está sobreescrevendo as posições do array de comandos com
     a linha posterior no arquivo.
 */
-int split_commands(char *line, int count){
+void split_commands(char *line){
+    printf("Chamou o split commands\n");
     //pegando o primeiro comando
-    char *token = strtok(line, ";");
-    // int count = 0;
+    // printf("String %s\n", line);
+    line[strcspn(line, "\n")] = '\0';
+
+    char delimit[] = ";";
+    char *token = strtok(line, delimit);
+    int count = 0;
     // if(count != 0){
     //     count += 1;
     // }
     while(token != NULL){
-        printf("Token da vez: %s para a posição: %d\n", token, count);
-        commands[count] = token;
-        count++;
+        // printf("Token da vez: %s para a posição: %d\n", token, split_commands_count);
+        // token = strtok(token, "\n");
+        // while(token != NULL){
+        
+        temp_commands[count++] = trim(token);
+            // token = strtok(NULL, "\n");
+        // }
+        split_commands_count++;
         // printf("Valor do command: %s\n", commands[count]);
-        token = strtok(NULL, ";");
+        token = strtok(NULL, delimit);
+        // printf("valor depois do NULL: %s\n", token);
     }
+
+    // split_commands_count = 0;
+
+    for (int i = 0; i < count; i++){
+        printf("Valor do temp_commands: %s\n", temp_commands[i]);
+        commands[break_split_count] = temp_commands[i];
+        break_split_count++;
+    }
+
+    // for(int i = 0; break_split_count < split_commands_count; i++){
+    //     
+    // }
+
     // printf("Valor do count: %d", count);
     //itera o valor que foi contado a variavel de controle para tamanho de cada comando
-
-    return count++;
 }
 
 void exists_exit_command(char *command){
@@ -252,4 +285,24 @@ void exists_exit_in_file(char *commands){
         printf(CLOSE_MSG);
         exit(0);
     }
+}
+
+/** trim leading and trailing whitespace from s, (s must be mutable) */
+char *trim (char *string){
+    size_t  beg = strspn (string, DELIM_TRIM),    /* no of chars of leading whitespace */
+            len = strlen (string);           /* length of s */
+
+    if (beg == len) {   /* string is all whitespace */
+        *string = 0;         /* make s the empty-string */
+        return string;
+    }
+
+    memmove (string, string + beg, len - beg + 1);    /* shift string to beginning */
+    for (int i = (int)(len - beg - 1); i >= 0; i--) {   /* loop from end */
+        if (isspace(string[i]))  /* checking if char is whitespace */
+            string[i] = 0;       /* overwrite with nul-character */
+        else
+            break;          /* otherwise - done */
+    }
+    return string;       /* Return s */
 }
