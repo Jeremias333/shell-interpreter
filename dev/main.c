@@ -181,6 +181,7 @@ void process_file(){
             break;
         }
         split_commands(line_arq);
+        
         // }
 
         // printf("Linha processada %d\n", commands_size);
