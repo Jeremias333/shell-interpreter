@@ -114,6 +114,13 @@ int process_address(char *file_name){
 void shell_loop(){
     char line[MAX_LINE];
     while(should_run){
+        if (shell_type == 0){
+            str_shell_type = seq_str;
+            
+
+        }else{
+            str_shell_type = par_str;
+        }
         //shell interativo
         if (shell_mode == 0){
             printf("%s", str_shell_type);
@@ -155,51 +162,34 @@ void process_commands(char *line){
 }
 
 void process_file(){
-    // printf("Processando arquivo...\n");
 
     //inicializar o shell por leitura do arquivo
     char line_arq[MAX_LINE];
-    // int count = 0;
 
-    //lendo linha a linha do arquivo
-
-    //BUG: Para arquivos a linha abaixo está sobreescrevendo
-    //Cada série de comandos.
-    // while(fgets(line, MAX_LINE, arq_address) != NULL){
-    //     lines_commands[count] = line;
-    //     count++;
-    // }
-
+    pid_t pid;
     int count = 0;
 
     while (!feof(arq_address)){
         fgets(line_arq, sizeof(line_arq), arq_address);
-        // lines_count = count;
-    
-        // for(int i = 0; i < lines_count; i++){
+
+        split_commands(line_arq);
+
+        commands_size = split_commands_count;
+        split_commands_count = 0;
+        pid = fork();
+        if (pid == 0){
+            for (int i = 0; i < commands_size; i++){
+                printf("Comando: %s\n", commands[i]);
+                exists_exit_command(commands[i]);
+                system(commands[i]);
+            }
+        }else{
+            wait(NULL);
+        }
+        
         if (feof(arq_address)){
             break;
         }
-        split_commands(line_arq);
-        
-        // }
-
-        // printf("Linha processada %d\n", commands_size);
-    }
-
-    commands_size = split_commands_count;
-
-    //irá dividir os comandos colocando todos dentro do vetor global commands
-    // split_commands(line);
-
-    // commands_size += lines_count;
-
-    for (int i = 0; i < commands_size; i++){
-        // if (commands[i] != NULL){
-            printf("valor do command: %s em %d\n", commands[i], i);
-            // exists_exit_command(commands[i]);
-            // system(commands[i]);
-        // }
     }
 
     exit(0);
@@ -219,15 +209,13 @@ void split_commands(char *line){
     char delimit[] = ";";
     char *token = strtok(line, delimit);
     int count = 0;
-    // if(count != 0){
-    //     count += 1;
-    // }
+
     while(token != NULL){
         // printf("Token da vez: %s para a posição: %d\n", token, split_commands_count);
         // token = strtok(token, "\n");
         // while(token != NULL){
         
-        temp_commands[count++] = trim(token);
+        commands[count++] = trim(token);
             // token = strtok(NULL, "\n");
         // }
         split_commands_count++;
@@ -235,21 +223,6 @@ void split_commands(char *line){
         token = strtok(NULL, delimit);
         // printf("valor depois do NULL: %s\n", token);
     }
-
-    // split_commands_count = 0;
-
-    for (int i = 0; i < count; i++){
-        printf("Valor do temp_commands: %s\n", temp_commands[i]);
-        commands[break_split_count] = temp_commands[i];
-        break_split_count++;
-    }
-
-    // for(int i = 0; break_split_count < split_commands_count; i++){
-    //     
-    // }
-
-    // printf("Valor do count: %d", count);
-    //itera o valor que foi contado a variavel de controle para tamanho de cada comando
 }
 
 void exists_exit_command(char *command){
