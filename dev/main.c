@@ -145,8 +145,6 @@ void shell_loop(){
         if (shell_mode == 1){
             //executar comandos lidos
             process_file();
-            // //verificando existencia do comando exit
-            // exists_exit_in_file(commands[commands_size-1]);
         }
     }
 }
@@ -196,14 +194,7 @@ void process_file(){
 
 }
 
-/*
-    BUG: split_commands está sobreescrevendo as posições do array de comandos com
-    a linha posterior no arquivo.
-*/
 void split_commands(char *line){
-    printf("Chamou o split commands\n");
-    //pegando o primeiro comando
-    // printf("String %s\n", line);
     line[strcspn(line, "\n")] = '\0';
 
     char delimit[] = ";";
@@ -211,17 +202,11 @@ void split_commands(char *line){
     int count = 0;
 
     while(token != NULL){
-        // printf("Token da vez: %s para a posição: %d\n", token, split_commands_count);
-        // token = strtok(token, "\n");
-        // while(token != NULL){
-        
         commands[count++] = trim(token);
-            // token = strtok(NULL, "\n");
-        // }
+
         split_commands_count++;
-        // printf("Valor do command: %s\n", commands[count]);
+
         token = strtok(NULL, delimit);
-        // printf("valor depois do NULL: %s\n", token);
     }
 }
 
@@ -261,22 +246,21 @@ void exists_exit_in_file(char *commands){
     }
 }
 
-/** trim leading and trailing whitespace from s, (s must be mutable) */
 char *trim (char *string){
-    size_t  beg = strspn (string, DELIM_TRIM),    /* no of chars of leading whitespace */
-            len = strlen (string);           /* length of s */
+    size_t  beg = strspn(string, DELIM_TRIM), len = strlen (string);
 
-    if (beg == len) {   /* string is all whitespace */
-        *string = 0;         /* make s the empty-string */
+    if (beg == len) {
+        *string = 0;
         return string;
     }
 
-    memmove (string, string + beg, len - beg + 1);    /* shift string to beginning */
-    for (int i = (int)(len - beg - 1); i >= 0; i--) {   /* loop from end */
-        if (isspace(string[i]))  /* checking if char is whitespace */
-            string[i] = 0;       /* overwrite with nul-character */
-        else
-            break;          /* otherwise - done */
+    memmove (string, string + beg, len - beg + 1);
+    for (int i = (int)(len - beg - 1); i >= 0; i--) {
+        if (isspace(string[i])){
+            string[i] = 0;
+        }else{
+            break;
+        }
     }
-    return string;       /* Return s */
+    return string;
 }
